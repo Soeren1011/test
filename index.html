@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>5card Preflop 100BB</title>
+  <style>
+    /* Allgemeines Layout */
+    body {
+      font-family: sans-serif;
+      font-size: 0.9em; 
+      margin: 20px;
+    }
+    h1, h2, h3 {
+      margin-bottom: 0.3em;
+    }
+    /* Haupt-Szenario-Buttons */
+    .main-scenario-bar button {
+      margin-right: 8px;
+      padding: 6px 12px; 
+      font-size: 0.9em;
+      border: 1px solid #333;
+      cursor: pointer;
+    }
+    /* Sub-Szenario-Buttons */
+    .sub-scenario-bar {
+      margin: 6px 0 12px 0;
+    }
+    .sub-scenario-bar button {
+      margin-right: 6px;
+      margin-bottom: 4px;
+      padding: 4px 10px;
+      font-size: 0.85em;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+    /* Controls (2-Karten + Quickbuttons) */
+    .controls {
+      margin-bottom: 0.8em;
+    }
+    .controls input {
+      width: 50px;
+      text-align: center;
+      text-transform: uppercase;
+      margin-right: 8px;
+      padding: 5px;
+      font-size: 0.85em;
+    }
+    .controls button {
+      padding: 5px 10px;
+      font-size: 0.85em;
+      border: 1px solid #444;
+      background-color: #eee;
+      cursor: pointer;
+    }
+    .quick-buttons {
+      margin-bottom: 1em;
+    }
+    .quick-buttons button {
+      margin: 2px;
+      padding: 4px 8px;
+      font-size: 0.8em;
+      border: 1px solid #444;
+      cursor: pointer;
+      background-color: #fafafa;
+    }
+    /* Button-Bar */
+    .button-bar {
+      margin-bottom: 1em;
+    }
+    .button-bar button {
+      margin-right: 8px;
+      padding: 5px 10px;
+      border: 1px solid #444;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+    /* Zentrierter Szenario-Titel + Suit-Auswahl */
+    #scenarioTitleBar {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+    #scenarioTitleBar h2 {
+      display: inline;
+      margin-right: 20px;
+    }
+    #suitConfigButtons button {
+      margin-right: 5px;
+      padding: 4px 10px;
+      font-size: 0.8em;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+    /* Kompakte Matrizen */
+    table.matrixTable {
+      font-size: 0.75em;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    table.matrixTable td {
+      border: 1px solid #ccc;
+      padding: 1px 2px; 
+      white-space: nowrap;
+      text-align: center;
+    }
+    table.matrixTable tr {
+      transition: all 0.2s;
+    }
+    td.toggleCell {
+      width: 20px;
+      cursor: default;
+    }
+    button.toggle-btn {
+      background-color: #eee;
+      border: 1px solid #999;
+      padding: 1px 4px;
+      cursor: pointer;
+      font-size: 0.75em;
+    }
+    .comboCell {
+      cursor: pointer;
+    }
+    .default {
+      background-color: white;
+    }
+    .placeholderCell {
+      border: none; 
+      background-color: transparent;
+      cursor: default;
+    }
+    /* Textarea zum Import */
+    #importArea {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+    /* Hellgrauer Hintergrund für Matrix 2,4,6,8 */
+    #matrix2, #matrix4, #matrix6, #matrix8 {
+      background-color: #f0f0f0;
+    }
+    /* Zentrierte, paarweise Titel */
+    .matrixTitle {
+      text-align: center;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    /* Quiz-Bereich nur für Matrix 1,3,5,7 (jetzt darüber) */
+    .quizArea {
+      margin-bottom: 20px;
+      font-size: 0.85em;
+    }
+    .quizArea button {
+      margin-top: 6px;
+    }
+    .quizLabel {
+      display: inline-block;
+      width: 80px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>5Card Preflop 100BB</h1>
+
+<!-- Haupt-Szenario -->
+<div class="main-scenario-bar">
+  <button onclick="selectMainScenario('RFI')">RFI</button>
+  <button onclick="selectMainScenario('vsRFI')">vs RFI</button>
+  <button onclick="selectMainScenario('3bet')">3bet</button>
+</div>
+
+<!-- Sub-Szenario-Buttons -->
+<div id="subButtonsRFI" class="sub-scenario-bar" style="display:none;">
+  <button onclick="loadSubScenario('RFI SB')">RFI SB</button>
+  <button onclick="loadSubScenario('RFI BTN')">RFI BTN</button>
+  <button onclick="loadSubScenario('RFI CO')">RFI CO</button>
+  <button onclick="loadSubScenario('RFI MP')">RFI MP</button>
+  <button onclick="loadSubScenario('RFI EP')">RFI EP</button>
+</div>
+<div id="subButtonsVsRFI" class="sub-scenario-bar" style="display:none;">
+  <button onclick="loadSubScenario('BB vs SB')">BB vs SB</button>
+  <button onclick="loadSubScenario('BB vs BTN')">BB vs BTN</button>
+  <button onclick="loadSubScenario('BB vs CO')">BB vs CO</button>
+  <button onclick="loadSubScenario('BB vs MP')">BB vs MP</button>
+  <button onclick="loadSubScenario('BB vs EP')">BB vs EP</button>
+  <button onclick="loadSubScenario('SB vs BTN')">SB vs BTN</button>
+  <button onclick="loadSubScenario('SB vs CO')">SB vs CO</button>
+  <button onclick="loadSubScenario('SB vs MP')">SB vs MP</button>
+  <button onclick="loadSubScenario('SB vs EP')">SB vs EP</button>
+  <button onclick="loadSubScenario('BTN vs CO')">BTN vs CO</button>
+  <button onclick="loadSubScenario('BTN vs MP')">BTN vs MP</button>
+  <button onclick="loadSubScenario('BTN vs EP')">BTN vs EP</button>
+  <button onclick="loadSubScenario('CO vs MP')">CO vs MP</button>
+  <button onclick="loadSubScenario('CO vs EP')">CO vs EP</button>
+  <button onclick="loadSubScenario('MP vs EP')">MP vs EP</button>
+</div>
+<div id="subButtons3bet" class="sub-scenario-bar" style="display:none;">
+  <button onclick="loadSubScenario('vs 5% OOP')">vs 5% OOP</button>
+  <button onclick="loadSubScenario('vs 5% IP')">vs 5% IP</button>
+  <button onclick="loadSubScenario('vs 9% OOP')">vs 9% OOP</button>
+  <button onclick="loadSubScenario('vs 9% IP')">vs 9% IP</button>
+</div>
+
+<!-- Zentrierter Titel + Suit-Auswahl -->
+<div id="scenarioTitleBar">
+  <h2 id="currentScenarioTitle">-- Kein Sub-Szenario gewählt --</h2>
+  <div id="suitConfigButtons" style="display:inline-block;">
+    <button onclick="setSuitConfig('double',0)">Double Suited</button>
+    <button onclick="setSuitConfig('single',1)">Single Suited</button>
+  </div>
+</div>
+
+<!-- 2-Karten Input + Quick-Buttons -->
+<div class="controls">
+  <label for="twoCardsInput">2-Karten:</label>
+  <input type="text" id="twoCardsInput" maxlength="2" placeholder="QQ" />
+  <button onclick="updateTwoCards()">Update</button>
+</div>
+<div class="quick-buttons" id="quickBtnContainer"></div>
+
+<!-- Button-Bar -->
+<div class="button-bar">
+  <button style="background-color: orange;" onclick="setMarkColor('orange')">3bet</button>
+  <button style="background-color: yellow;" onclick="setMarkColor('yellow')">Call</button>
+  <button style="background-color: lightblue;" onclick="setMarkColor('lightblue')">Fold</button>
+  <button style="background-color: white;" onclick="setMarkColor('white')">Leer</button>
+
+  <button style="background-color: lightgray;" onclick="clearAllMarkings()">Clear All</button>
+  <button style="background-color: red;" onclick="toggleSolutions()" id="solutionsBtn">Solution</button>
+  <button style="background-color: magenta;" onclick="compareAll()">Compare</button>
+  <button style="background-color: #aff;" onclick="saveAllRangesForCurrent()">Save Range</button>
+  
+  <!-- Renaming (Double & Single separat) -->
+  <button style="background-color: #ddd;" onclick="renameMatrixTitlesPairs()">Rename Titles (Pairs)</button>
+  <!-- Suits changing (Double & Single separat) -->
+  <button style="background-color: #d8d;" onclick="changeSuitsPairs()">Change Suits (Pairs)</button>
+</div>
+
+<!-- Acht Matrizen -->
+
+<!-- Paar (1+2) -->
+<div id="matrix1Container">
+  <div id="matrix1Title" class="matrixTitle">Matrix 1</div>
+  <!-- Quiz-Bereich jetzt ÜBER der Matrix 1 -->
+  <div class="quizArea">
+    <div><span class="quizLabel">Raise%?</span> <span id="quiz1Raise">--</span></div>
+    <div><span class="quizLabel">Call%?</span> <span id="quiz1Call">--</span></div>
+    <div><span class="quizLabel">Fold%?</span> <span id="quiz1Fold">--</span></div>
+    <button onclick="calculateQuiz(1,2)">Calculate Quiz</button>
+  </div>
+  <table id="matrix1" class="matrixTable"></table>
+</div>
+<div id="matrix2Container">
+  <div id="matrix2Title" class="matrixTitle">Matrix 2</div>
+  <table id="matrix2" class="matrixTable"></table>
+</div>
+
+<!-- Paar (3+4) -->
+<div id="matrix3Container">
+  <div id="matrix3Title" class="matrixTitle">Matrix 3</div>
+  <!-- Quiz-Bereich jetzt ÜBER der Matrix 3 -->
+  <div class="quizArea">
+    <div><span class="quizLabel">Raise%?</span> <span id="quiz3Raise">--</span></div>
+    <div><span class="quizLabel">Call%?</span> <span id="quiz3Call">--</span></div>
+    <div><span class="quizLabel">Fold%?</span> <span id="quiz3Fold">--</span></div>
+    <button onclick="calculateQuiz(3,4)">Calculate Quiz</button>
+  </div>
+  <table id="matrix3" class="matrixTable"></table>
+</div>
+<div id="matrix4Container">
+  <div id="matrix4Title" class="matrixTitle">Matrix 4</div>
+  <table id="matrix4" class="matrixTable"></table>
+</div>
+
+<!-- Paar (5+6) -->
+<div id="matrix5Container">
+  <div id="matrix5Title" class="matrixTitle">Matrix 5</div>
+  <!-- Quiz-Bereich jetzt ÜBER der Matrix 5 -->
+  <div class="quizArea">
+    <div><span class="quizLabel">Raise%?</span> <span id="quiz5Raise">--</span></div>
+    <div><span class="quizLabel">Call%?</span> <span id="quiz5Call">--</span></div>
+    <div><span class="quizLabel">Fold%?</span> <span id="quiz5Fold">--</span></div>
+    <button onclick="calculateQuiz(5,6)">Calculate Quiz</button>
+  </div>
+  <table id="matrix5" class="matrixTable"></table>
+</div>
+<div id="matrix6Container">
+  <div id="matrix6Title" class="matrixTitle">Matrix 6</div>
+  <table id="matrix6" class="matrixTable"></table>
+</div>
+
+<!-- Paar (7+8) => nur Double -->
+<div id="matrix7Container">
+  <div id="matrix7Title" class="matrixTitle">Matrix 7</div>
+  <!-- Quiz-Bereich jetzt ÜBER der Matrix 7 -->
+  <div class="quizArea">
+    <div><span class="quizLabel">Raise%?</span> <span id="quiz7Raise">--</span></div>
+    <div><span class="quizLabel">Call%?</span> <span id="quiz7Call">--</span></div>
+    <div><span class="quizLabel">Fold%?</span> <span id="quiz7Fold">--</span></div>
+    <button onclick="calculateQuiz(7,8)">Calculate Quiz</button>
+  </div>
+  <table id="matrix7" class="matrixTable"></table>
+</div>
+<div id="matrix8Container">
+  <div id="matrix8Title" class="matrixTitle">Matrix 8</div>
+  <table id="matrix8" class="matrixTable"></table>
+</div>
+
+<!-- Import-Bereich -->
+<h3>Import Hands (val1 > 0.7 => färbt in 2,4,6,8)</h3>
+<textarea id="importArea" placeholder="AdJdTh2h2s,0.76,...&#10;..."></textarea><br/>
+<button onclick="importHands('3bet')">Import 3bet</button>
+<button onclick="importHands('call')">Import Call</button>
+<button onclick="importHands('fold')">Import Fold</button>
+
+<script>
+// ----------------------------------------------------------
+// Globale Variablen & Setup
+// ----------------------------------------------------------
+let currentMainScenario = "";
+let currentSubScenario = "";
+// colorCodeIndex => 0=Double, 1=Single
+let colorCodeIndex = 0;
+let selectedColor = "white";
+let isMouseDown = false;
+let showSolutions = true; // (2,4,6,8) an/aus
+
+const ranksDesc = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+const validRanks = new Set(ranksDesc);
+
+// 2-Karten
+let card1="Q";
+let card2="Q";
+
+// ----------------------------------------------------------
+// Haupt-Szenario
+// ----------------------------------------------------------
+function selectMainScenario(main){
+  currentMainScenario=main;
+  document.getElementById("subButtonsRFI").style.display="none";
+  document.getElementById("subButtonsVsRFI").style.display="none";
+  document.getElementById("subButtons3bet").style.display="none";
+  if(main==="RFI"){
+    document.getElementById("subButtonsRFI").style.display="";
+  } else if(main==="vsRFI"){
+    document.getElementById("subButtonsVsRFI").style.display="";
+  } else if(main==="3bet"){
+    document.getElementById("subButtons3bet").style.display="";
+  }
+}
+
+// ----------------------------------------------------------
+// Sub-Szenario
+// ----------------------------------------------------------
+function loadSubScenario(subName){
+  currentSubScenario=subName;
+  document.getElementById("currentScenarioTitle").textContent=subName;
+  clearAllMarkings();
+  createAllMatrices();
+  restoreAllRangesForCurrent();
+  restoreMatrixTitlesPairs();
+}
+
+// ----------------------------------------------------------
+// Suit-Config => (0=Double, 1=Single)
+function setSuitConfig(label, idx){
+  colorCodeIndex=idx;
+  createAllMatrices();
+  restoreAllRangesForCurrent();
+  // wichtig: wir lesen/speichern andere (!) Titel
+  // => "titlesPairs_<subScenario>_<colorCodeIndex>"
+  restoreMatrixTitlesPairs();
+}
+
+// ----------------------------------------------------------
+// 2-Karten
+// ----------------------------------------------------------
+function updateTwoCards(){
+  const val=document.getElementById("twoCardsInput").value.trim().toUpperCase();
+  if(val.length!==2){
+    alert("Bitte 2 Zeichen (z.B. QQ).");
+    return;
+  }
+  let c1=val[0], c2=val[1];
+  if(!validRanks.has(c1)||!validRanks.has(c2)){
+    alert("Ungültige Kartenränge!");
+    return;
+  }
+  const i1=ranksDesc.indexOf(c1), i2=ranksDesc.indexOf(c2);
+  if(i2<i1){
+    [c1,c2]=[c2,c1];
+  }
+  card1=c1; 
+  card2=c2;
+  createAllMatrices();
+  restoreAllRangesForCurrent();
+  restoreMatrixTitlesPairs();
+}
+
+// ----------------------------------------------------------
+// Quickbuttons, Matrizen-Start
+// ----------------------------------------------------------
+window.addEventListener("DOMContentLoaded",()=>{
+  createQuickButtons();
+  createAllMatrices();
+  document.addEventListener("mouseup",()=> isMouseDown=false);
+});
+
+function createQuickButtons(){
+  const arr=[
+    "AA","KK","QQ","JJ","TT",
+    "AK","AQ","AJ","AT","A9","A8",
+    "KQ","KJ","KT","K9",
+    "QJ","QT","Q9","Q8",
+    "JT","J9","T9","T8",
+    "98","97"
+  ];
+  const c=document.getElementById("quickBtnContainer");
+  c.innerHTML="";
+  arr.forEach(two=>{
+    const b=document.createElement("button");
+    b.textContent=two;
+    b.onclick=()=>{
+      document.getElementById("twoCardsInput").value=two;
+      updateTwoCards();
+    };
+    c.appendChild(b);
+  });
+}
+
+// ----------------------------------------------------------
+// Alle 8 Matrizen erstellen
+// ----------------------------------------------------------
+function createAllMatrices(){
+  buildMatrix(1);
+  buildMatrix(2);
+  buildMatrix(3);
+  buildMatrix(4);
+  buildMatrix(5);
+  buildMatrix(6);
+
+  const isDouble=(colorCodeIndex===0);
+  document.getElementById("matrix7Container").style.display=isDouble?"":"none";
+  document.getElementById("matrix8Container").style.display=isDouble?"":"none";
+  if(isDouble){
+    buildMatrix(7);
+    buildMatrix(8);
+  } else {
+    // Clear 7+8 im Single-Fall
+    document.getElementById("matrix7").innerHTML="";
+    document.getElementById("matrix8").innerHTML="";
+  }
+}
+
+// ----------------------------------------------------------
+// buildMatrix => combos => table
+// ----------------------------------------------------------
+function buildMatrix(matrixNum){
+  const tableId="matrix"+matrixNum;
+  const table=document.getElementById(tableId);
+  if(!table)return;
+  table.innerHTML="";
+
+  let idx2=ranksDesc.indexOf(card2);
+  // TT+ => idx2=-1 (alte interne Logik)
+  if(card1===card2 && ["T","J","Q","K","A"].includes(card1)){
+    idx2=-1;
+  }
+
+  // rowData => array of arrays
+  let rowData=[];
+  for(let i=idx2+1;i<ranksDesc.length;i++){
+    const r3=ranksDesc[i];
+    const combos=build2CombosBelow(r3);
+    let rowCombos=[];
+    combos.forEach(pair=>{
+      let five=[card1,card2,r3,pair[0],pair[1]];
+      if(!wouldBeTrips(five)){
+        five=sort5Descending(five);
+        rowCombos.push(five);
+      }
+    });
+    if(rowCombos.length>0){
+      rowData.push(rowCombos);
+    }
+  }
+
+  let maxLen=0;
+  rowData.forEach(row=>{
+    if(row.length>maxLen)maxLen=row.length;
+  });
+
+  rowData.forEach(row=>{
+    const tr=document.createElement("tr");
+    tr.setAttribute("data-collapsed","false");
+
+    // Toggle-Cell
+    const tdToggle=document.createElement("td");
+    tdToggle.classList.add("toggleCell");
+    tdToggle.innerHTML=`<button class="toggle-btn" onclick="toggleRow(this)">\\</button>`;
+    tr.appendChild(tdToggle);
+
+    // Platzhalter
+    const placeholders=maxLen-row.length;
+    for(let p=0;p<placeholders;p++){
+      const tdPh=document.createElement("td");
+      tdPh.classList.add("comboCell","placeholderCell");
+      tdPh.style.backgroundColor="transparent";
+      tr.appendChild(tdPh);
+    }
+
+    // combos
+    row.forEach(five=>{
+      const td=document.createElement("td");
+      td.classList.add("comboCell","default");
+      td.innerHTML=buildColored5Cards(matrixNum,five);
+      // Drag
+      td.addEventListener("mousedown", e=>{
+        e.preventDefault();
+        isMouseDown=true;
+        markCell(td);
+      });
+      td.addEventListener("mouseover", e=>{
+        if(isMouseDown) markCell(td);
+      });
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+}
+
+function build2CombosBelow(r3){
+  const idx=ranksDesc.indexOf(r3);
+  if(idx<0)return[];
+  const sub=ranksDesc.slice(idx+1);
+  let combos=[];
+  for(let i=0;i<sub.length;i++){
+    for(let j=i+1;j<sub.length;j++){
+      combos.push([sub[i],sub[j]]);
+    }
+  }
+  return combos;
+}
+function wouldBeTrips(cards){
+  const countMap={};
+  cards.forEach(r=>countMap[r]=(countMap[r]||0)+1);
+  for(let k in countMap){
+    if(countMap[k]>=3)return true;
+  }
+  return false;
+}
+function sort5Descending(cards){
+  return [...cards].sort((a,b)=>ranksDesc.indexOf(a)-ranksDesc.indexOf(b));
+}
+
+// ----------------------------------------------------------
+// buildColored5Cards => getDistribution => assignSuitsByDistribution
+// ----------------------------------------------------------
+function buildColored5Cards(matrixNum,five){
+  const dist = getDistribution(matrixNum,(colorCodeIndex===0),five);
+  return assignSuitsByDistribution(five,dist);
+}
+
+function getDistribution(matrixNum,isDouble,five){
+  const pairId=getPairId(matrixNum);
+  let custom=loadPairSuitCode(pairId); 
+  if(custom) return custom.split("");
+
+  // Standard-Fallback
+  if(isDouble){
+    // (1+2): ddhhs
+    if(pairId==="12")return["d","d","h","h","s"];
+    // (3+4): sddhh
+    if(pairId==="34")return["s","d","d","h","h"];
+    // (5+6): ddhhh
+    if(pairId==="56")return["d","d","h","h","h"];
+    // (7+8): dddhh
+    if(pairId==="78")return["d","d","d","h","h"];
+  }else{
+    // Single => fallback
+    if(pairId==="12"||pairId==="34"){
+      return["d","d","h","c","s"];
+    } else if(pairId==="56"){
+      let suits=["h","h","d","c","s"];
+      if(suits[0]==="h"){ 
+        [suits[0],suits[2]]=[suits[2],suits[0]];
+      }
+      return suits;
+    } else if(pairId==="78"){
+      // single => unsichtbar => egal
+      return["d","d","h","h","s"];
+    }
+  }
+  return["d","d","h","h","s"];
+}
+function getPairId(matrixNum){
+  if(matrixNum<=2)return "12";
+  if(matrixNum<=4)return "34";
+  if(matrixNum<=6)return "56";
+  return "78";
+}
+
+function assignSuitsByDistribution(fiveCards, dist){
+  const rankUsedSuits={};
+  const suitMap=ch=>{
+    switch(ch){
+      case 'd':return 'blue';
+      case 'h':return 'red';
+      case 'c':return 'green';
+      case 's':return 'black';
+      default:return 'black';
+    }
+  };
+  let html="";
+  for(let i=0;i<fiveCards.length;i++){
+    const rank=fiveCards[i];
+    let letter=dist[i]||'s';
+    if(!rankUsedSuits[rank]){
+      rankUsedSuits[rank]=new Set();
+    }
+    if(rankUsedSuits[rank].has(letter)){
+      letter=getUniqueLetterForRank(letter,rankUsedSuits[rank]);
+    }
+    rankUsedSuits[rank].add(letter);
+    let col=suitMap(letter);
+    html+=`<span style="color:${col};font-weight:bold;">${rank}</span>`;
+  }
+  return html;
+}
+function getUniqueLetterForRank(original,usedSet){
+  const all=['d','h','c','s'];
+  let idx=all.indexOf(original);
+  if(idx<0)idx=0;
+  for(let i=0;i<all.length;i++){
+    let test=all[(idx+i)%all.length];
+    if(!usedSet.has(test)){
+      return test;
+    }
+  }
+  return 's';
+}
+
+// ----------------------------------------------------------
+// Toggle-Row
+// ----------------------------------------------------------
+function toggleRow(btn){
+  const row=btn.closest("tr");
+  const isCollapsed=(row.getAttribute("data-collapsed")==="true");
+  row.setAttribute("data-collapsed",(!isCollapsed).toString());
+  const tds=row.querySelectorAll("td.comboCell");
+  tds.forEach(td=>{
+    if(!td.classList.contains("toggleCell")){
+      td.style.display=isCollapsed?"":"none";
+    }
+  });
+}
+
+// ----------------------------------------------------------
+// Markierung
+// ----------------------------------------------------------
+function setMarkColor(col){ selectedColor=col; }
+function markCell(td){ td.style.backgroundColor=selectedColor; }
+function clearAllMarkings(){
+  document.querySelectorAll("td.comboCell").forEach(td=>{
+    td.style.backgroundColor="white";
+    td.style.outline="";
+  });
+}
+
+// ----------------------------------------------------------
+// SOLUTIONS => (2,4,6,8) an/aus
+// ----------------------------------------------------------
+function toggleSolutions(){
+  showSolutions=!showSolutions;
+  const disp=showSolutions?"":"none";
+  document.getElementById("matrix2Container").style.display=disp;
+  document.getElementById("matrix4Container").style.display=disp;
+  document.getElementById("matrix6Container").style.display=disp;
+  document.getElementById("matrix8Container").style.display=disp;
+  document.getElementById("solutionsBtn").textContent=showSolutions?"Solution":"Show Solution";
+}
+
+// ----------------------------------------------------------
+// Compare => (1,2), (3,4), (5,6), (7,8)
+// ----------------------------------------------------------
+function compareAll(){
+  document.querySelectorAll("td.comboCell").forEach(td=>td.style.outline="");
+  let total=0, diff=0;
+  const pairs=[[1,2],[3,4],[5,6],[7,8]];
+  pairs.forEach(pair=>{
+    const leftId="matrix"+pair[0];
+    const rightId="matrix"+pair[1];
+    const tLeft=document.getElementById(leftId);
+    const tRight=document.getElementById(rightId);
+    if(!tLeft||!tRight)return; 
+    const rowsLeft=tLeft.querySelectorAll("tr");
+    const rowsRight=tRight.querySelectorAll("tr");
+    const rowCount=Math.min(rowsLeft.length,rowsRight.length);
+    for(let r=0;r<rowCount;r++){
+      const tdsL=rowsLeft[r].querySelectorAll("td.comboCell");
+      const tdsR=rowsRight[r].querySelectorAll("td.comboCell");
+      const colCount=Math.min(tdsL.length,tdsR.length);
+      for(let c=0;c<colCount;c++){
+        if(tdsL[c].classList.contains("placeholderCell")||tdsR[c].classList.contains("placeholderCell")){
+          continue;
+        }
+        total++;
+        const bgL=window.getComputedStyle(tdsL[c]).backgroundColor;
+        const bgR=window.getComputedStyle(tdsR[c]).backgroundColor;
+        if(bgL!==bgR){
+          diff++;
+          tdsR[c].style.outline="2px solid red";
+        }
+      }
+    }
+  });
+  if(total>0){
+    const correct=total-diff;
+    const pct=(correct/total)*100;
+    alert(`${diff} falsch, ${pct.toFixed(1)}% richtig`);
+  } else {
+    alert("Keine vergleichbaren Zellen gefunden.");
+  }
+}
+
+// ----------------------------------------------------------
+// SAVE/RESTORE => (2,4,6,8)
+// ----------------------------------------------------------
+function getRangeKeyBase(){
+  if(!currentSubScenario)return null;
+  return currentSubScenario+"_"+card1+card2+"_"+colorCodeIndex;
+}
+function saveAllRangesForCurrent(){
+  const base=getRangeKeyBase();
+  if(!base){
+    alert("Kein Sub-Szenario gewählt!");
+    return;
+  }
+  [2,4,6,8].forEach(mNum=>saveRangeForMatrix(mNum));
+  alert("Alle Lösungs-Matrizen (2,4,6,8) gespeichert => "+base);
+}
+function restoreAllRangesForCurrent(){
+  const base=getRangeKeyBase();
+  if(!base)return;
+  [2,4,6,8].forEach(mNum=>restoreRangeForMatrix(mNum));
+}
+function saveRangeForMatrix(matrixNum){
+  const tableId="matrix"+matrixNum;
+  const t=document.getElementById(tableId);
+  if(!t)return;
+  const rows=t.querySelectorAll("tr");
+  let colorMatrix=[];
+  rows.forEach(row=>{
+    const comboCells=row.querySelectorAll("td.comboCell");
+    if(comboCells.length>0){
+      let rowColors=[];
+      comboCells.forEach(cell=>{
+        if(cell.classList.contains("placeholderCell")){
+          rowColors.push(null);
+        } else {
+          const bg=window.getComputedStyle(cell).backgroundColor;
+          rowColors.push(bg);
+        }
+      });
+      colorMatrix.push(rowColors);
+    }
+  });
+  const baseKey=getRangeKeyBase();
+  if(!baseKey)return;
+  const key="range_"+baseKey+"_m"+matrixNum;
+  localStorage.setItem(key, JSON.stringify(colorMatrix));
+}
+function restoreRangeForMatrix(matrixNum){
+  const tableId="matrix"+matrixNum;
+  const t=document.getElementById(tableId);
+  if(!t)return;
+  const rows=t.querySelectorAll("tr");
+  const baseKey=getRangeKeyBase();
+  if(!baseKey)return;
+  const key="range_"+baseKey+"_m"+matrixNum;
+  const raw=localStorage.getItem(key);
+  if(!raw)return;
+  try{
+    const colorMatrix=JSON.parse(raw);
+    for(let r=0;r<colorMatrix.length&&r<rows.length;r++){
+      const comboCells=rows[r].querySelectorAll("td.comboCell");
+      for(let c=0;c<colorMatrix[r].length&&c<comboCells.length;c++){
+        const col=colorMatrix[r][c];
+        if(col && !comboCells[c].classList.contains("placeholderCell")){
+          comboCells[c].style.backgroundColor=col;
+        }
+      }
+    }
+  }catch(e){
+    console.error("Fehler beim Laden =>",e);
+  }
+}
+
+// ----------------------------------------------------------
+// IMPORT => val1>0.7 => einfärben in (2,4,6,8)
+// ----------------------------------------------------------
+function importHands(action){
+  const text=document.getElementById("importArea").value.trim();
+  if(!text){
+    alert("Keine Zeilen zum Import!");
+    return;
+  }
+  let color="orange";
+  if(action==="call") color="yellow";
+  else if(action==="fold") color="lightblue";
+
+  const lines=text.split(/\r?\n/);
+  let importSet=new Set();
+  lines.forEach(line=>{
+    let parts=line.split(",");
+    if(parts.length<2)return;
+    let handStr= parts[0].trim(); 
+    let val1 = parseFloat(parts[1]);
+    if(!isNaN(val1)&&val1>0.7){
+      importSet.add(handStr);
+    }
+  });
+
+  [2,4,6,8].forEach(mNum=>{
+    const tableId="matrix"+mNum;
+    const t=document.getElementById(tableId);
+    if(!t)return;
+    const rows=t.querySelectorAll("tr");
+    rows.forEach(row=>{
+      const comboCells=row.querySelectorAll("td.comboCell");
+      comboCells.forEach(cell=>{
+        if(cell.classList.contains("placeholderCell"))return;
+        let spans=cell.querySelectorAll("span");
+        if(spans.length<5)return;
+        let cardRanks=[];
+        let cardSuits=[];
+        spans.forEach(sp=>{
+          let rankText=sp.textContent;
+          let suitChar=colorToSuitChar(sp.style.color);
+          cardRanks.push(rankText);
+          cardSuits.push(suitChar);
+        });
+        let handKey="";
+        for(let i=0;i<5;i++){
+          handKey+=cardRanks[i]+cardSuits[i];
+        }
+        if(importSet.has(handKey)){
+          cell.style.backgroundColor=color;
+        }
+      });
+    });
+  });
+  alert(`Import (${action}): val1>0.7 => eingefärbt in (2,4,6,8).`);
+}
+function colorToSuitChar(col){
+  switch(col){
+    case "blue":return "d";
+    case "red":return "h";
+    case "green":return "c";
+    case "black":return "s";
+    default:return "s";
+  }
+}
+
+// ----------------------------------------------------------
+// ### NEU: Paarweise Titel => Double & Single getrennt
+// ----------------------------------------------------------
+function renameMatrixTitlesPairs(){
+  if(!currentSubScenario){
+    alert("Kein Sub-Szenario gewählt!");
+    return;
+  }
+  // Wir laden - je nach colorCodeIndex (Double=0 / Single=1) - die alten
+  // Titel aus localStorage => Key "titlesPairs_<subScenario>_<colorCodeIndex>"
+  let oldArr=loadTitlesPairsFromStorage()||defaultTitlesPairs();
+  // 4 Prompts => (1+2),(3+4),(5+6),(7+8)
+  let p12=prompt("Name für Matrizen (1+2):", oldArr[0]); if(p12===null)return;
+  let p34=prompt("Name für Matrizen (3+4):", oldArr[1]); if(p34===null)return;
+  let p56=prompt("Name für Matrizen (5+6):", oldArr[2]); if(p56===null)return;
+  let p78=prompt("Name für Matrizen (7+8):", oldArr[3]); if(p78===null)return;
+  
+  let newArr=[p12,p34,p56,p78];
+  saveTitlesPairsToStorage(newArr);
+  applyMatrixTitlesPairs(newArr);
+}
+
+function restoreMatrixTitlesPairs(){
+  let arr=loadTitlesPairsFromStorage();
+  if(!arr)arr=defaultTitlesPairs();
+  applyMatrixTitlesPairs(arr);
+}
+/** 
+ * applyMatrixTitlesPairs(arr):
+ *  arr => [ "Titel12", "Titel34", "Titel56", "Titel78" ]
+ *  => set textContent => matrix1Title,matrix2Title => arr[0], ...
+ */
+function applyMatrixTitlesPairs(arr){
+  document.getElementById("matrix1Title").textContent=arr[0];
+  document.getElementById("matrix2Title").textContent=arr[0];
+  document.getElementById("matrix3Title").textContent=arr[1];
+  document.getElementById("matrix4Title").textContent=arr[1];
+  document.getElementById("matrix5Title").textContent=arr[2];
+  document.getElementById("matrix6Title").textContent=arr[2];
+  document.getElementById("matrix7Title").textContent=arr[3];
+  document.getElementById("matrix8Title").textContent=arr[3];
+}
+
+function loadTitlesPairsFromStorage(){
+  if(!currentSubScenario)return null;
+  // => "titlesPairs_<subScenario>_<colorCodeIndex>"
+  let key="titlesPairs_"+currentSubScenario+"_"+colorCodeIndex;
+  let raw=localStorage.getItem(key);
+  if(!raw)return null;
+  try{
+    let arr=JSON.parse(raw);
+    if(Array.isArray(arr)&&arr.length===4)return arr;
+  }catch(e){}
+  return null;
+}
+function saveTitlesPairsToStorage(arr){
+  if(!currentSubScenario)return;
+  let key="titlesPairs_"+currentSubScenario+"_"+colorCodeIndex;
+  localStorage.setItem(key,JSON.stringify(arr));
+}
+
+// Default-Titel => du kannst Double vs Single differenzieren, 
+// falls gewünscht
+function defaultTitlesPairs(){
+  // Dies ist nur ein Beispiel, hier nimmst du z. B. dieselben Defaults
+  // für Double und Single. 
+  // Willst du Single anders nennen, müsstest du in loadTitlesPairsFromStorage
+  // unterscheiden, ob colorCodeIndex=0/1 => andere Defaults
+  return [
+    "double suited pure",           
+    "double suite pure non nut",    
+    "good double trip suit",        
+    "bad double trip suit"          
+  ];
+}
+
+// ----------------------------------------------------------
+// ### NEU: Paarweise SUIT-CODES => (1+2,3+4,5+6,7+8)
+// ----------------------------------------------------------
+function changeSuitsPairs(){
+  if(!currentSubScenario){
+    alert("Kein Sub-Szenario gewählt!");
+    return;
+  }
+  let oldArr=loadPairSuitCodes()||["","","",""];
+  // 4 Prompts
+  let c12=prompt("Suit-Code für (1+2) (z.B. ddhhs):", oldArr[0]); if(c12===null)return;
+  let c34=prompt("Suit-Code für (3+4) (z.B. sddhh):", oldArr[1]); if(c34===null)return;
+  let c56=prompt("Suit-Code für (5+6) (z.B. ddhhh):", oldArr[2]); if(c56===null)return;
+  let c78=prompt("Suit-Code für (7+8) (z.B. dddhh):", oldArr[3]); if(c78===null)return;
+  let newArr=[c12,c34,c56,c78];
+  savePairSuitCodes(newArr);
+  alert("Suit-Codes gespeichert => createAllMatrices()...");
+  createAllMatrices();
+}
+
+// Load/Save => pairSuits_<subScenario>_<colorCodeIndex> => 4 Strings
+function loadPairSuitCodes(){
+  if(!currentSubScenario)return null;
+  let key="pairSuits_"+currentSubScenario+"_"+colorCodeIndex;
+  let raw=localStorage.getItem(key);
+  if(!raw)return null;
+  try{
+    let arr=JSON.parse(raw);
+    if(Array.isArray(arr)&&arr.length===4)return arr;
+  }catch(e){}
+  return null;
+}
+function savePairSuitCodes(arr){
+  if(!currentSubScenario)return;
+  let key="pairSuits_"+currentSubScenario+"_"+colorCodeIndex;
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+function loadPairSuitCode(pairId){
+  let arr=loadPairSuitCodes();
+  if(!arr)return null;
+  switch(pairId){
+    case "12": return arr[0]||null;
+    case "34": return arr[1]||null;
+    case "56": return arr[2]||null;
+    case "78": return arr[3]||null;
+  }
+  return null;
+}
+
+// ----------------------------------------------------------
+// QUIZ-FUNKTION (Raise/Call/Fold % in solutionMatrix 2,4,6,8)
+// ----------------------------------------------------------
+function calculateQuiz(mainMatrixNum, solutionMatrixNum){
+  const tableId="matrix"+solutionMatrixNum;
+  const tbl=document.getElementById(tableId);
+  if(!tbl){
+    alert("Lösungs-Matrix "+solutionMatrixNum+" existiert nicht!");
+    return;
+  }
+  const cells=tbl.querySelectorAll("td.comboCell");
+  if(!cells||cells.length===0){
+    alert("Keine Zellen in Matrix "+solutionMatrixNum);
+    return;
+  }
+  let total=0, countRaise=0, countCall=0, countFold=0;
+  cells.forEach(cell=>{
+    if(cell.classList.contains("placeholderCell"))return;
+    total++;
+    const bg=window.getComputedStyle(cell).backgroundColor;
+    if(bg==="rgb(255, 165, 0)"||bg==="orange") countRaise++;
+    else if(bg==="rgb(255, 255, 0)"||bg==="yellow") countCall++;
+    else if(bg==="rgb(173, 216, 230)"||bg==="lightblue") countFold++;
+  });
+  if(total===0){
+    alert("Matrix "+solutionMatrixNum+" hat keine combos.");
+    return;
+  }
+  let rPct=((countRaise/total)*100).toFixed(1)+"%";
+  let cPct=((countCall/total)*100).toFixed(1)+"%";
+  let fPct=((countFold/total)*100).toFixed(1)+"%";
+  document.getElementById("quiz"+mainMatrixNum+"Raise").textContent=rPct;
+  document.getElementById("quiz"+mainMatrixNum+"Call").textContent=cPct;
+  document.getElementById("quiz"+mainMatrixNum+"Fold").textContent=fPct;
+}
+</script>
+</body>
+</html>
